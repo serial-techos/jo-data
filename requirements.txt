@@ -1,0 +1,4 @@
+pydantic
+pandas
+pydantic-settings
+psycopg2-binary

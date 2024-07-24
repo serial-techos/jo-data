@@ -1,4 +1,8 @@
 pydantic
-pandas
+pandas<2.2
 pydantic-settings
 psycopg2-binary
+streamlit
+folium
+streamlit-folium
+plotly

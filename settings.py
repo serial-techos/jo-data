@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     DB_PASSWORD: str = "password"
     DB_HOST: str = "localhost"
     DB_PORT: int = 5432
+    CONN_STRING: str = (
+        f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    )
+    PYTHONPATH: str = "."
 
     class Config:
         env_file = ".env"

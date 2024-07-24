@@ -112,7 +112,9 @@ with DAG(
     )
 
     get_dataset = PythonOperator(
-        task_id="get_jo_datasets_catalog", python_callable=get_datasets_catalog, op_args=[COLUMNS]
+        task_id="get_jo_datasets_catalog",
+        python_callable=get_datasets_catalog,
+        op_args=[COLUMNS],
     )
 
     add_jo_dataset = PythonOperator(

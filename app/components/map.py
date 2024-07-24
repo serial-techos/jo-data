@@ -2,7 +2,7 @@
 Module for the map component to use in streamlit app
 """
 
-import os
+from settings import settings
 import plotly.express as px
 
 
@@ -22,7 +22,7 @@ class MapComponent:
 
         """
         px.set_mapbox_access_token(
-            open(os.getenv("MAPBOX_TOKEN", ".mapbox_token")).read()
+            settings.MAPBOX_TOKEN
         )
         fig = px.scatter_mapbox(
             self.data,

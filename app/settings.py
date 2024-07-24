@@ -15,9 +15,11 @@ class Settings(BaseSettings):
         f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     )
     PYTHONPATH: str = "."
+    MAPBOX_TOKEN: str = ""
 
     class Config:
         env_file = ".env"
+        ignore_extra = True
 
 
 settings = Settings()

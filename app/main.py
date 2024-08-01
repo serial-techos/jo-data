@@ -5,8 +5,8 @@ Main streamlit app
 import streamlit as st
 from components.map import MapComponent
 from components.bar import BarComponent
-from services.datasets import DatasetService
-from services.sites import SitesService
+from services import DatasetService, SitesService, MedalsService, CountriesMedalsService
+
 from settings import settings
 from dotenv import load_dotenv
 
@@ -27,15 +27,22 @@ def load_datasets_catalog():
 def load_sites_data():
     return SitesService(conn_uri=CONN_URI).process_data()
 
+@st.cache_data
+def load_medals_data():
+    return MedalsService(conn_uri=CONN_URI).process_data()
+
+@st.cache_data
+def load_countries_medals_data():
+    return CountriesMedalsService(conn_uri=CONN_URI).process_data()
 # Component loading functions
 # Using st.cache_resource to cache the component and prevent reloading it on every rerun
 @st.cache_resource
 def get_map_component(data):
     return MapComponent(data=data, lat_col="latitude", lon_col="longitude")
 
-@st.cache_resource
-def get_bar_component(data):
-    return BarComponent(data=data, x="title", y="records_count")
+# @st.cache_resource
+def get_bar_component(data, x="title", y="records_count"):
+    return BarComponent(data=data, x=x, y=y)
 
 # Initialize the streamlit app state to prevent crash on when the app is reloaded
 def initialize_state():
@@ -71,12 +78,14 @@ def display_dataset_records(datasets):
     bar_component = get_bar_component(filtered_datasets)
     bar_chart = bar_component.render(
         title="Nombre d'enregistrements par jeu de données",
-        color="theme",
+        # color="theme",
         labels={
             "records_count": "Nombre d'enregistrements",
             "title": "Nom du jeu de données",
             "theme": "Thème",
         },
+        orientation="v",
+        color="color"
     )
     st.plotly_chart(bar_chart)
 
@@ -116,6 +125,35 @@ def display_sites_map(sites):
     )
     st.plotly_chart(map_chart)
 
+def display_medals_data(medals):
+    # sort medals by total
+    medals = medals.sort_values("total", ascending=True)
+    countries = medals["country"].unique()
+    # add selected countries to the session state
+    if "selected_countries" not in st.session_state:
+        st.session_state.selected_countries = countries
+    
+    # display multiselect to select countries
+    selected_countries_command = st.multiselect(
+        "Pays",
+        countries,
+        default=st.session_state.selected_countries,
+        label_visibility="collapsed"
+    )
+    selected_countries = medals[medals["country"].isin(selected_countries_command)]
+    # display bar chart OF MEDALS BY COUNTRY
+    bar_component = get_bar_component(selected_countries, x="country", y="total")
+    bar_chart = bar_component.render(
+        title="Médailles par pays",
+        color="color",
+        labels={
+            "total": "Nombre de médailles",
+            "country": "Pays",
+        },
+        log_y=False
+    )
+    st.plotly_chart(bar_chart)
+
 
 def main():
     st.title("Insights Paris 2024 🏅")
@@ -123,11 +161,11 @@ def main():
     # Load data
     datasets = load_datasets_catalog()
     sites = load_sites_data()
-
+    medals = load_countries_medals_data()
     # Initialize the streamlit app state
     initialize_state()
 
-    tab1, tab2 = st.tabs(["Jeux de données", "Sites de compétition"])
+    tab1, tab2, tab3 = st.tabs(["Jeux de données", "Sites de compétition", "Médailles"])
 
     with tab1:
         dataset_metrics = {
@@ -146,7 +184,12 @@ def main():
         }
         display_metrics(sites_metrics)
         display_sites_map(sites)
-
+    
+    with tab3:
+        slider = st.slider("Pays affichés", value=[0, 10], min_value=0, max_value=medals.shape[0], step=1)
+        medals = medals.sort_values("total", ascending=False)
+        medals_to_print = medals.iloc[slider[0]:slider[1]]
+        display_medals_data(medals_to_print)
 
 if __name__ == "__main__":
     main()

@@ -1,4 +1,4 @@
-def create_color_from_str(string: str) -> str:
+def create_color_from_str(value: bool = False) -> str:
     """
     Function to create a color from a 
     
@@ -13,6 +13,6 @@ def create_color_from_str(string: str) -> str:
     "rgba(X, Y, Z, 0.5)"
 
     """
-    if string == "France":
+    if value:
         return f"rgba(65, 184, 213, 1)"
     return f"rgba(65, 184, 213, 0.4)"

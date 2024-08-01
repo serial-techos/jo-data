@@ -126,8 +126,6 @@ def display_sites_map(sites):
     st.plotly_chart(map_chart)
 
 def display_medals_data(medals):
-    # sort medals by total
-    medals = medals.sort_values("total", ascending=True)
     countries = medals["country"].unique()
     # add selected countries to the session state
     if "selected_countries" not in st.session_state:
@@ -141,8 +139,10 @@ def display_medals_data(medals):
         label_visibility="collapsed"
     )
     selected_countries = medals[medals["country"].isin(selected_countries_command)]
-    # display bar chart OF MEDALS BY COUNTRY
-    bar_component = get_bar_component(selected_countries, x="country", y="total")
+    slider = st.slider("Pays affichés", value=[0, 10], min_value=0, max_value=selected_countries.shape[0], step=1)
+    medals_sorted = selected_countries.sort_values("total", ascending=False)
+    medals_to_print = medals_sorted.iloc[slider[0]:slider[1]]
+    bar_component = get_bar_component(medals_to_print, x="country", y="total")
     bar_chart = bar_component.render(
         title="Médailles par pays",
         color="color",
@@ -186,10 +186,7 @@ def main():
         display_sites_map(sites)
     
     with tab3:
-        slider = st.slider("Pays affichés", value=[0, 10], min_value=0, max_value=medals.shape[0], step=1)
-        medals = medals.sort_values("total", ascending=False)
-        medals_to_print = medals.iloc[slider[0]:slider[1]]
-        display_medals_data(medals_to_print)
+        display_medals_data(medals)
 
 if __name__ == "__main__":
     main()

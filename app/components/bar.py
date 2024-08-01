@@ -43,13 +43,15 @@ class BarComponent:
                     text=self.data[self.y]
 ))
 
-        fig.update_xaxes(categoryorder='total descending')
+        # fig.update_xaxes(categoryorder='total descending')
         fig.update_layout(
             title=title,
             xaxis_title=labels.get(self.x, self.x),
             yaxis_title=labels.get(self.y, self.y),
             yaxis_type='log' if log_y else None,
             margin=dict(l=0, r=0, t=30, b=0),
+            xaxis={'categoryorder':'total descending'},
+            yaxis={'categoryorder':'total ascending'}
         )
 
         return fig

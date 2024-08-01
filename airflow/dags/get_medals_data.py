@@ -117,10 +117,10 @@ with DAG(
         op_args=["data/countries_medals.json"],
     )
 
-    add_countires_medals_dataset = PythonOperator(
+    add_countries_medals_dataset = PythonOperator(
         task_id="add_jo_medals_to_postgres",
         python_callable=add_jo_dataset_to_postgres,
         op_args=[conn_config, "countries_medals"],
     )
 
-    get_dataset >> add_countires_medals_dataset
+    get_dataset >> add_countries_medals_dataset

@@ -4,6 +4,8 @@ import pandas as pd
 from services.base import BaseService
 from utils import create_color_from_str
 
+datasets_used = ["paris_2024_sites_de_competition"]
+
 class DatasetService(BaseService):
     """
     Service class to handle datasets data.
@@ -22,5 +24,6 @@ class DatasetService(BaseService):
         data["title"] = data["title"].apply(
             lambda x: x.split("-")[1] if "-" in x else x
         )
-        data["color"] = data["title"].apply(create_color_from_str)
+        data["used"] = data["tablename"].apply(lambda x: x in datasets_used)
+        data["color"] = data["used"].apply(create_color_from_str)
         return data

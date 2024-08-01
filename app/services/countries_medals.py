@@ -20,6 +20,6 @@ class CountriesMedalsService(BaseService):
         data = self.get_data(include)
         # when country is France, we add a column is_france with value France
         # otherwise we add a column is_france with value Not France
-        data["is_france"] = data["code"].apply(lambda x: "France" if x == "FRA" else "Not France")
+        data["is_france"] = data["code"] == "FRA"
         data["color"] = data["is_france"].apply(create_color_from_str)
         return data

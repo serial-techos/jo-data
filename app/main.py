@@ -161,7 +161,9 @@ def display_medals_data(medals, athletes_medals):
     with tab2:
         selected_countries_athletes = athletes_medals[athletes_medals["country"].isin(selected_countries_command)]
         selected_countries_athletes.sort_values("total", ascending=False, inplace=True)
-        st.dataframe(selected_countries_athletes[["country", "athlete", "gold", "silver", "bronze", "total",]], hide_index=True)
+        # capitalize the column names
+        selected_countries_athletes.columns = selected_countries_athletes.columns.str.capitalize()
+        st.dataframe(selected_countries_athletes[["Country", "Athlete", "Gold", "Silver", "Bronze", "Total",]], hide_index=True, )
 
 def main():
     st.title("Insights Paris 2024 🏅")

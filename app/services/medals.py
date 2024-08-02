@@ -2,7 +2,7 @@
 
 import pandas as pd
 from services.base import BaseService
-
+from utils import create_color_from_str
 
 class MedalsService(BaseService):
     """
@@ -17,6 +17,6 @@ class MedalsService(BaseService):
     def process_data(self, **kwargs):
         include = kwargs.get("include", [])
         data = self.get_data(include)
-        data["total"] = data["gold"] + data["silver"] + data["bronze"]
-        data["is_france"] = "France" if data["code"] == "FRA" else "Not France"
+        data["is_france"] = data["code"] == "FRA"
+        data["color"] = data["is_france"].apply(create_color_from_str)
         return data

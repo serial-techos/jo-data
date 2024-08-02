@@ -2,12 +2,9 @@ from airflow import DAG
 
 from airflow.operators.python import PythonOperator
 
-from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
-
 from airflow.models import TaskInstance
 from datetime import datetime
 import os
-import sqlparse
 import pandas as pd
 from airflow.hooks.base import BaseHook
 from sqlalchemy import create_engine
@@ -62,7 +59,7 @@ COLUMNS = [
 ]
 
 
-def get_datasets_catalog(path: str, ti: TaskInstance):
+def get_datasets_catalog(path: str, output_key: str, ti: TaskInstance):
     """
     Get the catalog data from the Paris 2024 API
 
@@ -76,10 +73,10 @@ def get_datasets_catalog(path: str, ti: TaskInstance):
     )
     print("Data fetched from API")
     print(data)
-    ti.xcom_push(key="jo_medals", value=data)
+    ti.xcom_push(key=output_key, value=data)
 
 
-def add_jo_dataset_to_postgres(db_params: dict, table: str, ti: TaskInstance):
+def add_jo_dataset_to_postgres(db_params: dict, table: str,input_key: str,  ti: TaskInstance):
     """
     Add the catalog data to the PostgreSQL database
 
@@ -88,8 +85,11 @@ def add_jo_dataset_to_postgres(db_params: dict, table: str, ti: TaskInstance):
         ti (TaskInstance): TaskInstance object
     """
     # Retrieve the jo_datasets from XCom
+    print("Adding data to postgres")
+    print(ti.previous_ti)
+
     jo_datasets: pd.DataFrame = ti.xcom_pull(
-        key="jo_medals", task_ids="get_jo_medals"
+        key=input_key, task_ids=input_key
     )
     # Create a connection to the PostgreSQL database
     engine = create_engine(
@@ -114,13 +114,27 @@ with DAG(
     get_dataset = PythonOperator(
         task_id="get_jo_medals",
         python_callable=get_datasets_catalog,
-        op_args=["data/countries_medals.json"],
+        op_args=["data/countries_medals.json", "get_jo_medals"],
     )
+
 
     add_countries_medals_dataset = PythonOperator(
         task_id="add_jo_medals_to_postgres",
         python_callable=add_jo_dataset_to_postgres,
-        op_args=[conn_config, "countries_medals"],
+        op_args=[conn_config, "countries_medals", "get_jo_medals"],
     )
 
-    get_dataset >> add_countries_medals_dataset
+
+
+    get_athletes_dataset = PythonOperator(
+        task_id="get_jo_athletes_medals",
+        python_callable=get_datasets_catalog,
+        op_args=["data/athletes_medals.json", "get_jo_athletes_medals"],
+    )
+    add_athletes_medals_dataset = PythonOperator(
+        task_id="add_jo_athletes_medals_to_postgres",
+        python_callable=add_jo_dataset_to_postgres,
+        op_args=[conn_config, "athletes_medals", "get_jo_athletes_medals"],
+    )
+    get_dataset >> add_countries_medals_dataset 
+    get_athletes_dataset >> add_athletes_medals_dataset

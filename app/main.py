@@ -29,7 +29,7 @@ def load_sites_data():
 
 @st.cache_data
 def load_medals_data():
-    return MedalsService(conn_uri=CONN_URI).process_data()
+    return MedalsService(conn_uri=CONN_URI).process_data(include=["athlete", "code", "gold", "silver", "bronze", "total"])
 
 @st.cache_data
 def load_countries_medals_data():
@@ -125,11 +125,13 @@ def display_sites_map(sites):
     )
     st.plotly_chart(map_chart)
 
-def display_medals_data(medals):
+def display_medals_data(medals, athletes_medals):
+    #join the two datasets on the country code to get the country name
+    athletes_medals = athletes_medals.merge(medals[["code", "country"]], on="code", how="left")
     countries = medals["country"].unique()
     # add selected countries to the session state
     if "selected_countries" not in st.session_state:
-        st.session_state.selected_countries = countries
+        st.session_state.selected_countries = ["États-Unis d'Amérique","France", "République populaire de Chine", "Grande-Bretagne"]
     
     # display multiselect to select countries
     selected_countries_command = st.multiselect(
@@ -138,22 +140,28 @@ def display_medals_data(medals):
         default=st.session_state.selected_countries,
         label_visibility="collapsed"
     )
-    selected_countries = medals[medals["country"].isin(selected_countries_command)]
-    slider = st.slider("Pays affichés", value=[0, 10], min_value=0, max_value=selected_countries.shape[0], step=1)
-    medals_sorted = selected_countries.sort_values("total", ascending=False)
-    medals_to_print = medals_sorted.iloc[slider[0]:slider[1]]
-    bar_component = get_bar_component(medals_to_print, x="country", y="total")
-    bar_chart = bar_component.render(
-        title="Médailles par pays",
-        color="color",
-        labels={
-            "total": "Nombre de médailles",
-            "country": "Pays",
-        },
-        log_y=False
-    )
-    st.plotly_chart(bar_chart)
+    tab1, tab2 = st.tabs(["Médailles par pays", "Médailles par athlète"])
+    with tab1:
 
+        selected_countries = medals[medals["country"].isin(selected_countries_command)]
+        slider = st.slider("Pays affichés", value=[0, 10], min_value=0, max_value=selected_countries.shape[0], step=1)
+        medals_sorted = selected_countries.sort_values("total", ascending=False)
+        medals_to_print = medals_sorted.iloc[slider[0]:slider[1]]
+        bar_component = get_bar_component(medals_to_print, x="country", y="total")
+        bar_chart = bar_component.render(
+            title="Médailles par pays",
+            color="color",
+            labels={
+                "total": "Nombre de médailles",
+                "country": "Pays",
+            },
+            log_y=False
+        )
+        st.plotly_chart(bar_chart)
+    with tab2:
+        selected_countries_athletes = athletes_medals[athletes_medals["country"].isin(selected_countries_command)]
+        selected_countries_athletes.sort_values("total", ascending=False, inplace=True)
+        st.dataframe(selected_countries_athletes[["country", "athlete", "gold", "silver", "bronze", "total",]], hide_index=True)
 
 def main():
     st.title("Insights Paris 2024 🏅")
@@ -162,6 +170,7 @@ def main():
     datasets = load_datasets_catalog()
     sites = load_sites_data()
     medals = load_countries_medals_data()
+    athletes_medals = load_medals_data()
     # Initialize the streamlit app state
     initialize_state()
 
@@ -186,7 +195,7 @@ def main():
         display_sites_map(sites)
     
     with tab3:
-        display_medals_data(medals)
+        display_medals_data(medals, athletes_medals) 
 
 if __name__ == "__main__":
     main()

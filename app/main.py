@@ -18,25 +18,25 @@ CONN_URI = settings.CONN_STRING
 
 # Data loading functions
 # Using st.cache_data to cache the data and prevent reloading it on every rerun
-@st.cache_data
+@st.cache_data(ttl=180, show_spinner=False)
 def load_datasets_catalog():
     return DatasetService(conn_uri=CONN_URI).process_data()
 
 
-@st.cache_data
+@st.cache_data(ttl=180, show_spinner=False)
 def load_sites_data():
     return SitesService(conn_uri=CONN_URI).process_data()
 
-@st.cache_data
+@st.cache_data(ttl=180, show_spinner=False)
 def load_medals_data():
     return MedalsService(conn_uri=CONN_URI).process_data(include=["athlete", "code", "gold", "silver", "bronze", "total"])
 
-@st.cache_data
+@st.cache_data(ttl=180, show_spinner=False)
 def load_countries_medals_data():
     return CountriesMedalsService(conn_uri=CONN_URI).process_data()
 # Component loading functions
 # Using st.cache_resource to cache the component and prevent reloading it on every rerun
-@st.cache_resource
+@st.cache_resource(ttl=300, show_spinner=False)
 def get_map_component(data):
     return MapComponent(data=data, lat_col="latitude", lon_col="longitude")
 

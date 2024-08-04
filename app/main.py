@@ -159,7 +159,7 @@ def display_medals_data(medals, athletes_medals):
         )
         st.plotly_chart(bar_chart)
     with tab2:
-        selected_countries_athletes = athletes_medals[athletes_medals["country"].isin(selected_countries_command)]
+        selected_countries_athletes = athletes_medals[athletes_medals["country"].isin(selected_countries_command)].copy()
         selected_countries_athletes.sort_values("total", ascending=False, inplace=True)
         # capitalize the column names
         selected_countries_athletes.columns = selected_countries_athletes.columns.str.capitalize()

@@ -153,11 +153,24 @@ def display_medals_data(medals, athletes_medals):
         df = medals_sorted.iloc[slider[0]:slider[1]].copy()
         # TODO: refactor this as a component(segmented bar)
         fig = go.Figure(data=[
-            go.Bar(name='Or', y=df['flag'], x=df['gold'], marker_color='rgba(255, 215, 0, 0.7)', orientation='h',text=df['gold'], hovertemplate='%{gold} médailles'),
+            go.Bar(name='Or', y=df['flag'], x=df['gold'], marker_color='rgba(255, 215, 0, 0.7)', orientation='h',text=df['gold']),
             go.Bar(name='Argent', y=df['flag'], x=df['silver'], marker_color='rgba(192, 192, 192, 0.7)', orientation='h', text=df['silver']),
             go.Bar(name='Bronze', y=df['flag'], x=df['bronze'], marker_color='rgba(205, 127, 50, 0.7)', orientation='h', text=df['bronze']),
         ])
- 
+        fig.add_trace(go.Scatter(
+            x=df['total'], 
+            y=df['flag'],
+            text=df['total'],
+            mode='text',
+            texttemplate='  %{text}',
+            textposition='middle right',
+            textfont=dict(
+                size=18,
+                color='black'
+            ),
+            showlegend=False
+        ))
+
         fig.update_layout(
             title='Médailles par pays',
             xaxis_title='Nombre de médailles',

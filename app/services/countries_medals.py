@@ -16,6 +16,8 @@ countries_flags_mapping = {
     "POL": "PL",
     "TPE": "TW",
     "JAM": "JM",
+    "GER": "DE"
+    
 
 }
 class CountriesMedalsService(BaseService):

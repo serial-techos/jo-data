@@ -174,7 +174,6 @@ def display_medals_data(medals, athletes_medals):
         fig.update_layout(
             title='Médailles par pays',
             xaxis_title='Nombre de médailles',
-            yaxis_title='Pays',
             barmode='stack',
             plot_bgcolor='rgba(0,0,0,0)',
             paper_bgcolor='rgba(0,0,0,0)',

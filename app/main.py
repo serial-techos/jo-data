@@ -126,6 +126,7 @@ def display_sites_map(sites):
     st.plotly_chart(map_chart)
 
 def display_medals_data(medals, athletes_medals):
+    import plotly.graph_objects as go
     #join the two datasets on the country code to get the country name
     athletes_medals = athletes_medals.merge(medals[["code", "country"]], on="code", how="left")
     countries = medals["country"].unique()
@@ -142,22 +143,32 @@ def display_medals_data(medals, athletes_medals):
     )
     tab1, tab2 = st.tabs(["Médailles par pays", "Médailles par athlète"])
     with tab1:
-
+        
         selected_countries = medals[medals["country"].isin(selected_countries_command)]
-        slider = st.slider("Pays affichés", value=[0, 10], min_value=0, max_value=selected_countries.shape[0], step=1)
-        medals_sorted = selected_countries.sort_values("total", ascending=False)
-        medals_to_print = medals_sorted.iloc[slider[0]:slider[1]]
-        bar_component = get_bar_component(medals_to_print, x="country", y="total")
-        bar_chart = bar_component.render(
-            title="Médailles par pays",
-            color="color",
-            labels={
-                "total": "Nombre de médailles",
-                "country": "Pays",
-            },
-            log_y=False
+        slider = st.slider(f"Pays affichés", value=[0, selected_countries.shape[0]], min_value=0, max_value=selected_countries.shape[0], step=1)
+        medals_sorted = selected_countries.sort_values("gold", ascending=False)
+        df = medals_sorted.iloc[slider[0]:slider[1]]
+        # TODO: refactor this as a component(segmented bar)
+        fig = go.Figure(data=[
+            go.Bar(name='Or', y=df['country'], x=df['gold'], marker_color='rgba(255, 215, 0, 0.7)', orientation='h',text=df['gold'], hovertemplate='%{gold} médailles'),
+            go.Bar(name='Argent', y=df['country'], x=df['silver'], marker_color='rgba(192, 192, 192, 0.7)', orientation='h', text=df['silver']),
+            go.Bar(name='Bronze', y=df['country'], x=df['bronze'], marker_color='rgba(205, 127, 50, 0.7)', orientation='h', text=df['bronze']),
+        ])
+ 
+        fig.update_layout(
+            title='Médailles par pays',
+            xaxis_title='Pays',
+            yaxis_title='Nombre de médailles',
+            barmode='stack',
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(color='white'),
+            legend_title_text='Type de médaille',
+            xaxis={'categoryorder':'total descending'},
+            yaxis={'categoryorder':'total ascending'},
+            margin=dict(l=0, r=0, t=30, b=0),
         )
-        st.plotly_chart(bar_chart)
+        st.plotly_chart(fig)
     with tab2:
         selected_countries_athletes = athletes_medals[athletes_medals["country"].isin(selected_countries_command)].copy()
         selected_countries_athletes.sort_values("total", ascending=False, inplace=True)
@@ -176,9 +187,9 @@ def main():
     # Initialize the streamlit app state
     initialize_state()
 
-    tab1, tab2, tab3 = st.tabs(["Jeux de données", "Sites de compétition", "Médailles"])
+    medals_tab,sites_tab,datasets_tab = st.tabs(["Médailles", "Sites de compétition", "Jeux de données"])
 
-    with tab1:
+    with datasets_tab:
         dataset_metrics = {
             "Nombre de jeux de données": datasets.shape[0],
             "Datasets Géographiques": len(datasets[datasets["theme"] == "Geodata"]),
@@ -187,7 +198,7 @@ def main():
         display_metrics(dataset_metrics)
         display_dataset_records(datasets)
 
-    with tab2:
+    with sites_tab:
         sites_metrics = {
             "Disciplines sportives": len(sites["sports"].str.split(",").explode().unique()),
             "Sites Olympiques": len(sites[sites["category_id"] == "venue-olympic"]),
@@ -196,7 +207,7 @@ def main():
         display_metrics(sites_metrics)
         display_sites_map(sites)
     
-    with tab3:
+    with medals_tab:
         display_medals_data(medals, athletes_medals) 
 
 if __name__ == "__main__":

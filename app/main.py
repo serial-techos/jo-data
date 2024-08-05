@@ -144,21 +144,24 @@ def display_medals_data(medals, athletes_medals):
     tab1, tab2 = st.tabs(["Médailles par pays", "Médailles par athlète"])
     with tab1:
         
-        selected_countries = medals[medals["country"].isin(selected_countries_command)]
+        selected_countries = medals[medals["country"].isin(selected_countries_command)].copy()
+        if selected_countries.shape[0] == 0:
+            st.warning("Aucun pays sélectionné")
+            return
         slider = st.slider(f"Pays affichés", value=[0, selected_countries.shape[0]], min_value=0, max_value=selected_countries.shape[0], step=1)
-        medals_sorted = selected_countries.sort_values("gold", ascending=False)
-        df = medals_sorted.iloc[slider[0]:slider[1]]
+        medals_sorted = selected_countries.sort_values("gold", ascending=False).copy()
+        df = medals_sorted.iloc[slider[0]:slider[1]].copy()
         # TODO: refactor this as a component(segmented bar)
         fig = go.Figure(data=[
-            go.Bar(name='Or', y=df['country'], x=df['gold'], marker_color='rgba(255, 215, 0, 0.7)', orientation='h',text=df['gold'], hovertemplate='%{gold} médailles'),
-            go.Bar(name='Argent', y=df['country'], x=df['silver'], marker_color='rgba(192, 192, 192, 0.7)', orientation='h', text=df['silver']),
-            go.Bar(name='Bronze', y=df['country'], x=df['bronze'], marker_color='rgba(205, 127, 50, 0.7)', orientation='h', text=df['bronze']),
+            go.Bar(name='Or', y=df['flag'], x=df['gold'], marker_color='rgba(255, 215, 0, 0.7)', orientation='h',text=df['gold'], hovertemplate='%{gold} médailles'),
+            go.Bar(name='Argent', y=df['flag'], x=df['silver'], marker_color='rgba(192, 192, 192, 0.7)', orientation='h', text=df['silver']),
+            go.Bar(name='Bronze', y=df['flag'], x=df['bronze'], marker_color='rgba(205, 127, 50, 0.7)', orientation='h', text=df['bronze']),
         ])
  
         fig.update_layout(
             title='Médailles par pays',
-            xaxis_title='Pays',
-            yaxis_title='Nombre de médailles',
+            xaxis_title='Nombre de médailles',
+            yaxis_title='Pays',
             barmode='stack',
             plot_bgcolor='rgba(0,0,0,0)',
             paper_bgcolor='rgba(0,0,0,0)',

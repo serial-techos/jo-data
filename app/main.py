@@ -11,6 +11,9 @@ from settings import settings
 from dotenv import load_dotenv
 
 load_dotenv()
+from streamlit_geolocation import streamlit_geolocation
+def search_string(s, search):
+    return search in str(s).lower()
 
 st.set_page_config(layout="wide", page_title="JO Paris 2024", page_icon="🏅")
 CONN_URI = settings.CONN_STRING
@@ -218,34 +221,64 @@ def main():
         display_dataset_records(datasets)
 
     with celebration_sites:
+        st.markdown("**Découvrez les lieux de célébration des JO Paris 2024!**")
         events = load_events_data()
+        events_selected = events.copy()
+
         events_metrics = {
             "Célébrations": events.shape[0],
             "Diffusions": len(events[events["subcategory_code"] == "games-broadcasting"]),
             "Sites de festivité": len(events[events["subcategory_code"] == "around-the-games"])
         }
         display_metrics(events_metrics)
-        locations = [event for event in events["location"].unique() if event]
-        if "selected_locations" not in st.session_state:
-            st.session_state.selected_locations = ["Paris", "Marseille", "Lyon", "Bordeaux", "Nantes"]
-        #implement multiselect to filter by location
+        
+        # locations = [event for event in events["location"].unique() if event]
+        # if "selected_locations" not in st.session_state:
+        #     st.session_state.selected_locations = ["Paris", "Marseille", "Lyon", "Bordeaux", "Nantes"]
       
-        location_selected = st.multiselect(
-            "Villes",
-            locations,
-            default=st.session_state.selected_locations,
-            label_visibility="collapsed"
-        )
-        events_selected = events[events["location"].isin(location_selected)]
+        # location_selected = st.multiselect(
+        #     "Villes",
+        #     locations,
+        #     default=st.session_state.selected_locations,
+        #     label_visibility="collapsed"
+        # )
+        # events_selected = events[events["location"].isin(location_selected)]
+        # print(my_geolocation)
+        #implement a search bar to filter by location/key word over the whole dataset(organization, address, category)
+        st.markdown("**Recherche par mot-clé**")
+        search_query = st.text_input("Recherche", "", placeholder="Montparnasse, Mairie, Concert, etc..", label_visibility="collapsed")
+        st.markdown("**Près de moi**")
+        my_geolocation = streamlit_geolocation()
+        if search_query:
+            if "," in search_query:
+                search_queries = search_query.split(",")
+                mask = events_selected.apply(lambda x: x.map(lambda s: any(search_string(s, search_query) for search_query in search_queries)))
+            else:
+                mask = events_selected.apply(lambda x: x.map(lambda s: search_string(s, search_query)))
+            events_selected = events_selected.loc[mask.any(axis=1)]
 
+        # st.dataframe(events_selected, hide_index=True)
+        center = {"lat": my_geolocation["latitude"], "lon": my_geolocation["longitude"]}
+        
         map_component = get_map_component(events_selected)
+        #if lat and lon are not None, render the map with the center as the geolocation
         map_chart = map_component.render(
-            title="Lieux de célébration",
-            hover_name="organization_name",
+            title=f"Lieux de célébration({events_selected.shape[0]})",
+            hover_name="title",
             hover_data=["category_id", "subcategory_code", "address"],
             color="subcategory_code_gold",
-            labels={"organization_name": "Lieu de célébration", "category_id": "Catégorie"}
+            labels={"title": "Lieu de célébration", "category_id": "Catégorie"},
         )
+        if my_geolocation["latitude"] and my_geolocation["longitude"]:
+            map_chart = map_component.render(
+                title=f"Lieux de célébration({events_selected.shape[0]})",
+                hover_name="title",
+                hover_data=["category_id", "subcategory_code", "address"],
+                color="subcategory_code_gold",
+                labels={"title": "Lieu de célébration", "category_id": "Catégorie"},
+                center=center,
+            )
+ 
         st.plotly_chart(map_chart)
 
     with sites_tab:

@@ -16,7 +16,7 @@ class MapComponent:
         self.lat = lat_col
         self.lon = lon_col
 
-    def render(self, title: str, hover_name: str, color: str, labels: dict, hover_data: list = None):
+    def render(self, title: str, hover_name: str, color: str, labels: dict, hover_data: list = None, center: dict = None):
         """
         Method to render the map component
 
@@ -35,7 +35,8 @@ class MapComponent:
             color_discrete_sequence=px.colors.qualitative.Pastel,
             labels=labels,
             title=title,
-            hover_data=hover_data
+            hover_data=hover_data,
+            center=center
         )
         fig.update_traces(cluster=dict(enabled=True), marker={"size": 20})
 

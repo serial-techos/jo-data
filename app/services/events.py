@@ -14,7 +14,7 @@ class EventsService(BaseService):
         include = kwargs.get("include", [])
         data = self.get_data(include)
         data = data[data["category_id"] == "celebration_event"]
-        data["subcategory_code_gold"] = data["subcategory_code"].str.replace("_", " ").replace("-", " ").str.title()
+        data["subcategory_code_gold"] = data["subcategory_code"].str.replace("_", " ").str.replace("-", " ").str.title()
 
         data["latitude"] = data["latitude"].astype(float)
         data["longitude"] = data["longitude"].astype(float)

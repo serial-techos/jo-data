@@ -199,6 +199,14 @@ def display_medals_data(medals, athletes_medals):
         st.dataframe(selected_countries_athletes[["Country", "Athlete", "Gold", "Silver", "Bronze", "Total",]], hide_index=True, )
 
 def main():
+    hide_streamlit_style = """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    </style>
+
+    """
+    st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
     st.title("Insights Paris 2024 🏅")
 
     # Load data
@@ -221,14 +229,14 @@ def main():
         display_dataset_records(datasets)
 
     with celebration_sites:
-        st.markdown("**Découvrez les lieux de célébration des JO Paris 2024!**")
+        st.markdown("**Découvrez les lieux de célébration/fan zones des JO Paris 2024!**")
         events = load_events_data()
         events_selected = events.copy()
 
         events_metrics = {
-            "Célébrations": events.shape[0],
-            "Diffusions": len(events[events["subcategory_code"] == "games-broadcasting"]),
-            "Sites de festivité": len(events[events["subcategory_code"] == "around-the-games"])
+            "Lieux de célébrations": events.shape[0],
+            "Lieux de diffusions d'épreuves": len(events[events["subcategory_code"] == "games-broadcasting"]),
+            "Lieux de festivité/fan zones": len(events[events["subcategory_code"] == "around-the-games"])
         }
         display_metrics(events_metrics)
         

@@ -5,7 +5,7 @@ Main streamlit app
 import streamlit as st
 from components.map import MapComponent
 from components.bar import BarComponent
-from services import DatasetService, SitesService, MedalsService, CountriesMedalsService
+from services import DatasetService, SitesService, MedalsService, CountriesMedalsService, EventsService
 
 from settings import settings
 from dotenv import load_dotenv
@@ -34,6 +34,10 @@ def load_medals_data():
 @st.cache_data(ttl=180, show_spinner=False)
 def load_countries_medals_data():
     return CountriesMedalsService(conn_uri=CONN_URI).process_data()
+
+@st.cache_data(ttl=180, show_spinner=False)
+def load_events_data():
+    return EventsService(conn_uri=CONN_URI).process_data()
 # Component loading functions
 # Using st.cache_resource to cache the component and prevent reloading it on every rerun
 @st.cache_resource(ttl=300, show_spinner=False)
@@ -202,7 +206,7 @@ def main():
     # Initialize the streamlit app state
     initialize_state()
 
-    medals_tab,sites_tab,datasets_tab = st.tabs(["Médailles", "Sites de compétition", "Jeux de données"])
+    medals_tab, celebration_sites,sites_tab,datasets_tab = st.tabs(["Médailles", "Lieux de célébration","Sites de compétition", "Jeux de données"])
 
     with datasets_tab:
         dataset_metrics = {
@@ -212,6 +216,28 @@ def main():
         }
         display_metrics(dataset_metrics)
         display_dataset_records(datasets)
+
+    with celebration_sites:
+        events = load_events_data()
+        events_metrics = {
+            "Célébrations": events.shape[0],
+            "Diffusions": len(events[events["subcategory_code"] == "games-broadcasting"]),
+            "Sites de festivité": len(events[events["subcategory_code"] == "around-the-games"])
+        }
+        display_metrics(events_metrics)
+        locations = events["location"].unique()
+        selected_location = st.selectbox("Lieux de célébration", locations)
+        events_selected = events[events["location"] == selected_location]
+
+        map_component = get_map_component(events_selected)
+        map_chart = map_component.render(
+            title="Lieux de célébration",
+            hover_name="organization_name",
+            color="subcategory_code_gold",
+            labels={"organization_name": "Lieu de célébration", "category_id": "Catégorie"},
+            hover_template="Nom: %{hovertext}<br> Catégorie: %{customdata[0]}<extra></extra><br> Address: %{customdata[7]}"
+        )
+        st.plotly_chart(map_chart)
 
     with sites_tab:
         sites_metrics = {

@@ -5,7 +5,7 @@ from services.base import BaseService
 
 
 class EventsService(BaseService):
-    TABLE_NAME = "paris_2024_evenements_olympiade_culturelle"
+    TABLE_NAME = "games_map_events_fr"
 
     def get_data(self, include: list = []) -> pd.DataFrame:
         return super().get_data(include)
@@ -13,7 +13,10 @@ class EventsService(BaseService):
     def process_data(self, **kwargs):
         include = kwargs.get("include", [])
         data = self.get_data(include)
-        data["latitude_c"] = data["latitude_c"].replace("..", ".").astype(float)
-        data["longitude_c"] = data["longitude_c"].str.replace("..", ".").astype(float)
-        data = data[data["latitude_c"].notnull() & data["longitude_c"].notnull()]
+        data = data[data["category_id"] == "celebration_event"]
+        data["subcategory_code_gold"] = data["subcategory_code"].str.replace("_", " ").replace("-", " ").str.title()
+
+        data["latitude"] = data["latitude"].astype(float)
+        data["longitude"] = data["longitude"].astype(float)
+        data = data[data["latitude"].notnull() & data["longitude"].notnull()]
         return data

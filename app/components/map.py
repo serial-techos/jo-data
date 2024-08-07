@@ -16,7 +16,7 @@ class MapComponent:
         self.lat = lat_col
         self.lon = lon_col
 
-    def render(self, title: str, hover_name: str, color: str, labels: dict, hover_data: list = None, center: dict = None):
+    def render(self, title: str, hover_name: str, color: str, labels: dict, hover_data: list = None, center: dict = None, zoom: int = 4):
         """
         Method to render the map component
 
@@ -29,14 +29,14 @@ class MapComponent:
             lat=self.lat,
             lon=self.lon,
             hover_name=hover_name,
-            zoom=4,
             height=700,
             color=color,
             color_discrete_sequence=px.colors.qualitative.Pastel,
             labels=labels,
             title=title,
-            hover_data=hover_data,
-            center=center
+            center=center,
+            custom_data=hover_data,
+            zoom=zoom
         )
         fig.update_traces(cluster=dict(enabled=True), marker={"size": 20})
 

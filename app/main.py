@@ -232,19 +232,6 @@ def main():
         }
         display_metrics(events_metrics)
         
-        # locations = [event for event in events["location"].unique() if event]
-        # if "selected_locations" not in st.session_state:
-        #     st.session_state.selected_locations = ["Paris", "Marseille", "Lyon", "Bordeaux", "Nantes"]
-      
-        # location_selected = st.multiselect(
-        #     "Villes",
-        #     locations,
-        #     default=st.session_state.selected_locations,
-        #     label_visibility="collapsed"
-        # )
-        # events_selected = events[events["location"].isin(location_selected)]
-        # print(my_geolocation)
-        #implement a search bar to filter by location/key word over the whole dataset(organization, address, category)
         st.markdown("**Recherche par mot-clé**")
         search_query = st.text_input("Recherche", "", placeholder="Montparnasse, Mairie, Concert, etc..", label_visibility="collapsed")
         st.markdown("**Près de moi**")
@@ -265,7 +252,7 @@ def main():
         map_chart = map_component.render(
             title=f"Lieux de célébration({events_selected.shape[0]})",
             hover_name="title",
-            hover_data=["category_id", "subcategory_code", "address"],
+            hover_data=["title","category_id", "subcategory_code", "address"],
             color="subcategory_code_gold",
             labels={"title": "Lieu de célébration", "category_id": "Catégorie"},
         )
@@ -273,11 +260,20 @@ def main():
             map_chart = map_component.render(
                 title=f"Lieux de célébration({events_selected.shape[0]})",
                 hover_name="title",
-                hover_data=["category_id", "subcategory_code", "address"],
+                hover_data=["title","category_id", "subcategory_code", "address"],
                 color="subcategory_code_gold",
-                labels={"title": "Lieu de célébration", "category_id": "Catégorie"},
+                labels={"title": "Lieu de célébration", "category_id": "Catégorie", "subcategory_code_gold": "Type de célébration"},
                 center=center,
+                zoom=13
             )
+        map_chart.update_traces(hovertemplate="<b>%{customdata[0]}</b> <br><br> Address: %{customdata[3]}")
+        map_chart.update_layout(legend=dict(
+            yanchor="top",
+            y=0.99,
+            xanchor="left",
+            x=0.01
+        ),
+        legend_title_text="Type de célébration")
  
         st.plotly_chart(map_chart)
 

@@ -225,17 +225,26 @@ def main():
             "Sites de festivité": len(events[events["subcategory_code"] == "around-the-games"])
         }
         display_metrics(events_metrics)
-        locations = events["location"].unique()
-        selected_location = st.selectbox("Lieux de célébration", locations)
-        events_selected = events[events["location"] == selected_location]
+        locations = [event for event in events["location"].unique() if event]
+        if "selected_locations" not in st.session_state:
+            st.session_state.selected_locations = ["Paris", "Marseille", "Lyon", "Bordeaux", "Nantes"]
+        #implement multiselect to filter by location
+      
+        location_selected = st.multiselect(
+            "Villes",
+            locations,
+            default=st.session_state.selected_locations,
+            label_visibility="collapsed"
+        )
+        events_selected = events[events["location"].isin(location_selected)]
 
         map_component = get_map_component(events_selected)
         map_chart = map_component.render(
             title="Lieux de célébration",
             hover_name="organization_name",
+            hover_data=["category_id", "subcategory_code", "address"],
             color="subcategory_code_gold",
-            labels={"organization_name": "Lieu de célébration", "category_id": "Catégorie"},
-            hover_template="Nom: %{hovertext}<br> Catégorie: %{customdata[0]}<extra></extra><br> Address: %{customdata[7]}"
+            labels={"organization_name": "Lieu de célébration", "category_id": "Catégorie"}
         )
         st.plotly_chart(map_chart)
 

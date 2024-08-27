@@ -18,6 +18,7 @@ def search_string(s, search):
 st.set_page_config(layout="wide", page_title="JO Paris 2024", page_icon="🏅")
 CONN_URI = settings.CONN_STRING
 
+print(f"Connection URI: {CONN_URI}")
 
 # Data loading functions
 # Using st.cache_data to cache the data and prevent reloading it on every rerun
@@ -41,8 +42,7 @@ def load_countries_medals_data():
 @st.cache_data(ttl=180, show_spinner=False)
 def load_events_data():
     return EventsService(conn_uri=CONN_URI).process_data()
-# Component loading functions
-# Using st.cache_resource to cache the component and prevent reloading it on every rerun
+
 @st.cache_resource(ttl=300, show_spinner=False)
 def get_map_component(data):
     return MapComponent(data=data, lat_col="latitude", lon_col="longitude")
@@ -50,6 +50,8 @@ def get_map_component(data):
 # @st.cache_resource
 def get_bar_component(data, x="title", y="records_count"):
     return BarComponent(data=data, x=x, y=y)
+
+
 
 # Initialize the streamlit app state to prevent crash on when the app is reloaded
 def initialize_state():
@@ -204,7 +206,6 @@ def main():
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     </style>
-
     """
     st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
     st.title("Insights Paris 2024 🏅")
@@ -217,7 +218,7 @@ def main():
     # Initialize the streamlit app state
     initialize_state()
 
-    medals_tab, celebration_sites,sites_tab,datasets_tab = st.tabs(["Médailles", "Lieux de célébration","Sites de compétition", "Jeux de données"])
+    medals_tab, celebration_sites, sites_tab, datasets_tab = st.tabs(["Médailles", "Lieux de célébration","Sites de compétition", "Jeux de données"])
 
     with datasets_tab:
         dataset_metrics = {

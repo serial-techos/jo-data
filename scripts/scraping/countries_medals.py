@@ -27,8 +27,8 @@ def get_olympic_data():
         )
 
         # Scroll step by step to load all content
-        line_height = 950
-        for i in range(5)[1:4]:
+        line_height = 900
+        for i in range(10)[1:8]:
             driver.execute_script(f"window.scrollTo(0, {line_height * i});")
             time.sleep(1)
             data_record = extract_olympic_data(driver.page_source)
@@ -46,8 +46,8 @@ def extract_olympic_data(html_content):
     for row in soup.find_all("div", {"data-testid": "noc-row"}):
         # print(row)  
         country_info = row.find("div", class_=re.compile('^emotion-srm-'))
-        country_name = country_info.find("span", class_="elhe7kv5").text.strip()
-        country_code = country_info.find("span", class_="elhe7kv4").text.strip()
+        country_name = country_info.find("span", class_="euzfwma5").text.strip()
+        country_code = country_info.find("span", class_="euzfwma4").text.strip()
 
         medals = row.find_all("span", class_="e1oix8v91")
         try:

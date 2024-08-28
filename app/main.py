@@ -138,10 +138,11 @@ def display_medals_data(medals, athletes_medals):
     import plotly.graph_objects as go
     #join the two datasets on the country code to get the country name
     athletes_medals = athletes_medals.merge(medals[["code", "country"]], on="code", how="left")
-    countries = medals["country"].unique()
+    countries = medals.sort_values("gold", ascending=False)["country"].unique()
+    
     # add selected countries to the session state
     if "selected_countries" not in st.session_state:
-        st.session_state.selected_countries = ["États-Unis d'Amérique","France", "République populaire de Chine", "Grande-Bretagne"]
+        st.session_state.selected_countries = countries[:5]
     
     # display multiselect to select countries
     selected_countries_command = st.multiselect(
@@ -215,6 +216,8 @@ def main():
     sites = load_sites_data()
     medals = load_countries_medals_data()
     athletes_medals = load_medals_data()
+
+    
     # Initialize the streamlit app state
     initialize_state()
 

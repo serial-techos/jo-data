@@ -17,13 +17,13 @@ hostname = pg_conn.host
 username = pg_conn.login
 password = pg_conn.password
 database = pg_conn.schema
-
+port = pg_conn.port
 conn_config = {
     "host": hostname,
     "username": username,
     "password": password,
     "database": database,
-    "port": 5432,
+    "port": port,
 }
 
 def get_data_file(path: str):
